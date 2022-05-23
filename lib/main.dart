@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
+import 'package:image_cropper/image_cropper.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -153,16 +155,43 @@ class _MyHomePageState extends State<MyHomePage> {
       final pickedImage = await ImagePicker().pickImage(source: source);
       if (pickedImage != null) {
         textScanning = true;
-        imageFile = pickedImage;
+        final numGuiaImage = await _cropImage(pickedImage);
+        imageFile = XFile(numGuiaImage!.path);
         setState(() {});
-        getRecognisedText(pickedImage);
+        if (imageFile != null) getRecognisedText(imageFile!);
       }
     } catch (e) {
       textScanning = false;
       imageFile = null;
-      scannedText = "Error occured while scanning";
+      scannedText = e.toString();
       setState(() {});
     }
+  }
+
+  Future<CroppedFile?> _cropImage(XFile pickedFile) async {
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: pickedFile.path,
+      aspectRatio: CropAspectRatio(ratioX: 100, ratioY: 50),
+      aspectRatioPresets: [
+        CropAspectRatioPreset.square,
+        CropAspectRatioPreset.ratio3x2,
+        CropAspectRatioPreset.original,
+        CropAspectRatioPreset.ratio4x3,
+        CropAspectRatioPreset.ratio16x9
+      ],
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            // initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        IOSUiSettings(
+          title: 'Cropper',
+        ),
+      ],
+    );
+    return croppedFile;
   }
 
   void getRecognisedText(XFile image) async {
