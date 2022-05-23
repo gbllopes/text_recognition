@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 void main() {
   runApp(const MyApp());
@@ -160,15 +160,15 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (e) {
       textScanning = false;
       imageFile = null;
-	  scannedText = "Error occured while scanning";
+      scannedText = "Error occured while scanning";
       setState(() {});
     }
   }
 
   void getRecognisedText(XFile image) async {
     final inputImage = InputImage.fromFilePath(image.path);
-    final textDetector = GoogleMlKit.vision.textDetector();
-    RecognisedText recognisedText = await textDetector.processImage(inputImage);
+    final textDetector = TextRecognizer(script: TextRecognitionScript.latin);
+    final recognisedText = await textDetector.processImage(inputImage);
     await textDetector.close();
     scannedText = "";
     for (TextBlock block in recognisedText.blocks) {
